@@ -17,7 +17,10 @@ if [[ -z "$TAG" ]]; then
 else
   IMAGE=$NAME:$TAG
 fi
-ID=$(docker run -d $IMAGE /build/builder)
+PREBUILD_CONTAINER=$(docker run -d $IMAGE /app/.datica/pre-build)
+docker attach $PREBUILD_CONTAINER
+PREBUILD_IMAGE=$(docker commit $PREBUILD_CONTAINER $NAME $TAG )
+ID=$(docker run -d $PREBUILD_IMAGE /build/builder)
 docker attach $ID
 test $(docker wait $ID) -eq 0
 docker commit $ID $NAME $TAG > /dev/null
